@@ -1,0 +1,298 @@
+router2#show run
+Building configuration...
+
+Current configuration : 5069 bytes
+!
+! Last configuration change at 10:03:25 PDT Thu Jul 28 2022
+!
+version 16.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname TAN-OUTSIDE-4431-2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 <ommited>
+!
+aaa new-model
+!
+!
+!
+!
+!
+!
+!
+aaa session-id common
+clock timezone PDT -8 0
+clock summer-time PDT recurring
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip name-server 172.16.0.2
+no ip domain lookup
+ip domain name cesium.me
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+license udi pid CSR1000V sn 9MCBE4H7GVZ
+diagnostic bootup level minimal
+spanning-tree extend system-id
+!
+!
+!
+username cesium privilege 15 <ommited>
+!
+redundancy
+!
+!
+!
+!
+!
+!
+track 1 ip sla 1
+ delay down 10 up 10
+!
+track 2 ip sla 2
+ delay down 10 up 10
+!
+track 3 list boolean or
+ object 1
+ object 2
+!
+track 11 ip sla 11
+ delay down 10 up 120
+!
+track 12 ip sla 12
+ delay down 10 up 120
+!
+track 13 list boolean or
+ object 11
+ object 12
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.11.0.94 255.255.252.0
+!
+interface GigabitEthernet1
+ description -=|CLINK-KRLD530HW2001-BDKY0664|=-
+ ip address 4.16.0.30 255.255.255.252
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ description -=|Inside Ethernet Connection|=-
+ ip address 4.23.83.3 255.255.255.0
+ ip ospf 1 area 0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet3
+ description -=|COMCAST-61.KFGS.040774.CBCL|=-
+ ip address 50.224.46.146 255.255.255.248
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet4
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router ospf 1
+ router-id 10.255.255.20
+ default-information originate
+!
+router bgp 33492
+ bgp router-id 10.11.0.94
+ bgp log-neighbor-changes
+ neighbor 4.16.0.29 remote-as 3356
+ neighbor 4.23.83.254 remote-as 33492
+ neighbor 50.224.46.145 remote-as 7922
+ !
+ address-family ipv4
+  network 4.23.83.0 mask 255.255.255.0
+  network 8.6.184.0 mask 255.255.254.0
+  neighbor 4.16.0.29 activate
+  neighbor 4.16.0.29 soft-reconfiguration inbound
+  neighbor 4.16.0.29 route-map lumen-in in
+  neighbor 4.16.0.29 route-map lumen-out out
+  neighbor 4.23.83.254 activate
+  neighbor 4.23.83.254 soft-reconfiguration inbound
+  neighbor 4.23.83.254 prefix-list neighbor-filter out
+  neighbor 50.224.46.145 activate
+  neighbor 50.224.46.145 soft-reconfiguration inbound
+  neighbor 50.224.46.145 route-map comcast-in in
+  neighbor 50.224.46.145 route-map comcast-out out
+ exit-address-family
+!
+!
+virtual-service csr_mgmt
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet1 4.16.0.29 track 3
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet3 50.224.46.145 11
+ip route 8.6.184.0 255.255.254.0 4.23.83.1
+!
+ip as-path access-list 1 permit ^$
+ip as-path access-list 467 permit ^3356$
+ip as-path access-list 468 permit ^7922$
+ip ssh version 2
+ip ssh server algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+ip ssh client algorithm encryption aes128-ctr aes192-ctr aes256-ctr
+!
+!
+ip prefix-list defaultRoute seq 5 permit 0.0.0.0/0
+!
+ip prefix-list evg-4.23-network seq 10 permit 4.23.83.0/24
+!
+ip prefix-list evg-8.6-network seq 10 permit 8.6.184.0/23
+!
+ip prefix-list neighbor-filter seq 10 deny 8.6.184.0/23
+ip prefix-list neighbor-filter seq 15 deny 4.23.83.0/24
+ip prefix-list neighbor-filter seq 20 deny 8.6.185.0/24
+ip prefix-list neighbor-filter seq 25 deny 8.6.184.0/24
+ip prefix-list neighbor-filter seq 26 deny 0.0.0.0/0
+ip prefix-list neighbor-filter seq 30 permit 0.0.0.0/0 le 32
+!
+ip access-list standard ClinkPeer
+ permit 4.16.0.29
+ip sla 1
+ icmp-echo 8.8.4.4 source-ip 4.16.0.30
+ threshold 150
+ timeout 500
+ip sla schedule 1 life forever start-time now
+ip sla 2
+ icmp-echo 1.1.1.1 source-ip 4.16.0.30
+ threshold 150
+ timeout 500
+ip sla schedule 2 life forever start-time now
+ip sla 11
+ icmp-echo 8.8.8.8 source-ip 50.224.46.146
+ threshold 150
+ timeout 500
+ frequency 1
+ip sla schedule 11 life forever start-time now
+ip sla 12
+ icmp-echo 8.8.8.8 source-ip 50.224.46.146
+ threshold 150
+ timeout 500
+ frequency 1
+ip sla schedule 12 life forever start-time now
+!
+!
+route-map comcast-out permit 10
+ match ip address prefix-list evg-8.6-network
+ match track  13
+!
+route-map lumen-out permit 10
+ match ip address prefix-list evg-8.6-network
+ match track  3
+!
+route-map lumen-out permit 20
+ match ip address prefix-list evg-4.23-network
+!
+route-map comcast-in deny 5
+ match ip address prefix-list defaultRoute
+!
+route-map comcast-in permit 10
+ match as-path 468
+!
+route-map lumen-in deny 5
+ match ip address prefix-list defaultRoute
+!
+route-map lumen-in permit 10
+ match as-path 467
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ transport input all
+!
+ntp server 172.16.0.1
+!
+!
+!
+!
+!
+end
+
+TAN-OUTSIDE-4431-2#
