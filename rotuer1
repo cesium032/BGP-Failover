@@ -13,7 +13,7 @@ platform qfp utilization monitor load 80
 no platform punt-keepalive disable-kernel-core
 platform console serial
 !
-hostname TAN-4431-OUTSIDE-1
+hostname r1
 !
 boot-start-marker
 boot-end-marker
