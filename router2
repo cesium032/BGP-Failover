@@ -133,7 +133,6 @@ interface Loopback0
  ip address 10.11.0.94 255.255.252.0
 !
 interface GigabitEthernet1
- description -=|CLINK-KRLD530HW2001-BDKY0664|=-
  ip address 4.16.0.30 255.255.255.252
  negotiation auto
  no mop enabled
@@ -148,7 +147,6 @@ interface GigabitEthernet2
  no mop sysid
 !
 interface GigabitEthernet3
- description -=|COMCAST-61.KFGS.040774.CBCL|=-
  ip address 50.224.46.146 255.255.255.248
  negotiation auto
  no mop enabled
